@@ -55,3 +55,8 @@ The percentage of votes each candidate won
 The total number of votes each candidate won
 
 The winner of the election based on popular vote
+
+Code source and support: Python 2, Activity 8
+https://github.com/4Reference/python-challenge/blob/master/PyPoll/main.py
+AskBCS
+Tutor Limei Hou
