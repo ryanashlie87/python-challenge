@@ -1,63 +1,76 @@
-# In addition, your final script should both print the analysis to the terminal and export a text file with the results.
-
+# First we'll import the os module
+# This will allow us to create file paths across operating systems
 import os
+
+# Module for reading CSV files
 import csv
 
-pollData = os.path.join(".","Resources","election_data.csv")
-#currentDirectory = os.getcwd()
-#print(currentDirectory)
-#print(pollData)
+csvpath = os.path.join( 'Resources', 'budget_data.csv')
 
-# Open the CSV file
-with open(pollData, newline="", encoding="utf-8") as csvfile:
-    csvreader = csv.reader(csvfile, delimiter=",")
+# # Method 1: Plain Reading of CSV files
+# with open(csvpath, 'r') as file_handler:
+#     lines = file_handler.read()
+#     print(lines)
+#     print(type(lines))
 
-  # The total number of votes cast (row count after the header)
-    next(csvreader)
-    data = list(csvreader)
-    row_count = len(data)
 
-  # Create new list from CSV column "C" to get a complete list of candidates who received votes
-    candilist = list()
-    tally = list()
-    for i in range (0,row_count):
-        candidate = data[i][2]
-        tally.append(candidate)
-        if candidate not in candilist: 
-            candilist.append(candidate)
-    candicount = len(candilist)
+# Method 2: Improved Reading using CSV module
+totalmonths = 0
+totalrevenue = 0
+revenue = []
+previousrevenue = 0
+month_of_change = []
+revenuechange = 0
+greatest_decrease = ["", 9999999]
+greatest_increase = ["", 0]
+revenue_change_list = []
+revenue_average = 0
 
-  # The total number of votes each candidate won & the percentage of votes each candidate won
-    votes = list()
-    percentage = list()
-    for j in range (0,candicount):
-        name = candilist[j]
-        votes.append(tally.count(name))
-        vprct = votes[j]/row_count
-        percentage.append(vprct)
 
-  # The winner of the election based on popular vote.
-    winner = votes.index(max(votes))    
+with open(csvpath) as csvfile:
 
-# In addition, your final script should both print the analysis to the terminal and export a text file with the results.
-  # Print the results to terminal
-    print("Election Results")
-    print("----------------------------")
-    print(f"Total Votes: {row_count:,}")
-    print("----------------------------")
-    for k in range (0,candicount): 
-        print(f"{candilist[k]}: {percentage[k]:.3%} ({votes[k]:,})")
-    print("----------------------------")
-    print(f"Winner: {candilist[winner]}")
-    print("----------------------------")
+    # CSV reader specifies delimiter and variable that holds contents
+    csvreader = csv.reader(csvfile, delimiter=',')
 
-  # Print the results to "PyPoll.txt" file
-    print("Election Results", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
-    print(f"Total Votes: {row_count:,}", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
-    for k in range (0,candicount): 
-        print(f"{candilist[k]}: {percentage[k]:.3%} ({votes[k]:,})", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
-    print(f"Winner: {candilist[winner]}", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
+    print(csvreader)
+
+    # Read the header row first (skip this step if there is no header)
+    csv_header = next(csvreader)
+    print(f"CSV Header: {csv_header}")
+
+    # Read each row of data after the header
+    for row in csvreader:
+
+        totalmonths = totalmonths + 1
+        totalrevenue = totalrevenue + int(row[1])
+
+        revenuechange = int(row[1])- previousrevenue
+        #print(revenuechange)
+        previousrevenue = int(row[1])
+       #print(int(row[1]))
+        revenue_change_list = revenue_change_list + [revenuechange]
+        #print(revenue_change_list)
+        month_of_change = [month_of_change] + [row[0]]
+
+        if revenuechange>greatest_increase[1]:
+                    greatest_increase[1]= revenuechange
+                    greatest_increase[0] = row[0]
+
+        if revenuechange<greatest_decrease[1]:
+                    greatest_decrease[1]= revenuechange
+                    greatest_decrease[0] = row[0]
+        
+    print(totalmonths)
+    print (totalrevenue)
+    print(sum(revenue_change_list[1:])/len(revenue_change_list[1:]))   
+    print(greatest_increase)
+    print(greatest_decrease)
+
+    with open("pybank.txt", 'w') as file:
+        file.write("Financial Analysis\n")
+        file.write("---------------------\n")
+        file.write("Total Months: %d\n" % totalmonths)
+        file.write("Total Revenue: $%d\n" % totalrevenue)
+        file.write("Average Revenue Change $%d\n" % revenue_average)
+        file.write("Greatest Increase in Revenue: %s ($%s)\n" % (greatest_increase[0], greatest_increase[1]))
+        file.write("Greatest Decrease in Revenue: %s ($%s)\n" % (greatest_decrease[0], greatest_decrease[1]))
